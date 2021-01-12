@@ -4,7 +4,7 @@
 #'
 #' @param data a data frame with four columns, in which the first two columns are censored event times, and the next two columns are censoring indicator variables
 #' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "gumbel", and "normal"
-#' @param control, a list of the following components: \code{yes.PIOSexact}, \cdoe{yes.boot}, \code{nboot}, \code{seed1}. \code{yes.PIOSexact} is a logical value indicating whether to calculate the exact PIOS test statistic, and the default value is \code{FALSE}. \code{yes.boot} is a logical value indicating whether to implement the bootstrap procedure. \code{nboot} is the number of bootstrap samples.  \code{seed1} is the seed for generating the bootstrap samples.
+#' @param control a list of the following components: \code{yes.PIOSexact}, \code{yes.boot}, \code{nboot}, \code{seed1}. \code{yes.PIOSexact} is a logical value indicating whether to calculate the exact PIOS test statistic, and the default value is \code{FALSE}. \code{yes.boot} is a logical value indicating whether to implement the bootstrap procedure. \code{nboot} is the number of bootstrap samples.  \code{seed1} is the seed for generating the bootstrap samples.
 #'
 #' @import copula survival numDeriv foreach parallel doSNOW
 #'

@@ -35,25 +35,38 @@ CopulaFuns <- function(copula.family){
          },
          "normal"={
            n1.der = function(s1,s2,theta){
-             sapply(1:length(s1),function(k){
-               pnorm(qnorm(s2[k]),mean=theta*qnorm(s1[k]),sd=sqrt(1-theta^2))*dnorm(qnorm(s1[k]))
-             })
+             pnorm(qnorm(s2),mean=theta*qnorm(s1),sd=sqrt(1-theta^2))*dnorm(qnorm(s1))
            }
            n2.der = function(s1,s2,theta){
-             sapply(1:length(s1),function(k){
-               pnorm(qnorm(s1[k]),mean=theta*qnorm(s2[k]),sd=sqrt(1-theta^2))*dnorm(qnorm(s2[k]))
-             })
-             }
-           n3.der = function(s1,s2,theta){
-             sapply(1:length(s1),function(k){
-                dnorm(qnorm(s1[k]),mean=theta*qnorm(s2[k]),sd=sqrt(1-theta^2))*dnorm(qnorm(s2[k]))
-             })
-             }
-           n4.der = function(s1,s2,theta){
-             sapply(1:length(s1),function(k){
-               mvtnorm::pmvnorm(upper=qnorm(c(s1[k],s2[k])),lower=-Inf,sigma=matrix(c(1,theta,theta,1),nrow=2,ncol=2))
-             })
+             pnorm(qnorm(s1),mean=theta*qnorm(s2),sd=sqrt(1-theta^2))*dnorm(qnorm(s2))
            }
+           n3.der = function(s1,s2,theta){
+             dnorm(qnorm(s1),mean=theta*qnorm(s2),sd=sqrt(1-theta^2))*dnorm(qnorm(s2))
+           }
+           n4.der = function(s1,s2,theta){
+             sigma = matrix(c(1,theta,theta,1),nrow=2,ncol=2)
+             apply(cbind(s1,s2),1,function(s) mvtnorm::pmvnorm(upper=qnorm(s),lower=-Inf,sigma=sigma))
+           }
+           # n1.der = function(s1,s2,theta){
+           #   sapply(1:length(s1),function(k){
+           #     pnorm(qnorm(s2[k]),mean=theta*qnorm(s1[k]),sd=sqrt(1-theta^2))*dnorm(qnorm(s1[k]))
+           #   })
+           # }
+           # n2.der = function(s1,s2,theta){
+           #   sapply(1:length(s1),function(k){
+           #     pnorm(qnorm(s1[k]),mean=theta*qnorm(s2[k]),sd=sqrt(1-theta^2))*dnorm(qnorm(s2[k]))
+           #   })
+           #   }
+           # n3.der = function(s1,s2,theta){
+           #   sapply(1:length(s1),function(k){
+           #      dnorm(qnorm(s1[k]),mean=theta*qnorm(s2[k]),sd=sqrt(1-theta^2))*dnorm(qnorm(s2[k]))
+           #   })
+           #   }
+           # n4.der = function(s1,s2,theta){
+           #   sapply(1:length(s1),function(k){
+           #     mvtnorm::pmvnorm(upper=qnorm(c(s1[k],s2[k])),lower=-Inf,sigma=matrix(c(1,theta,theta,1),nrow=2,ncol=2))
+           #   })
+           # }
            list(C=n4.der, C.u2=n2.der, C.u1=n1.der,C.u1u2=n3.der)
          }
          )
@@ -151,11 +164,18 @@ lr.test = function(data, copula.fam, yes.PIOSexact=F){
   }
   if (yes.PIOSexact){
     # out-of-sample pseudo log-likelihood
-    os.lik = sapply(1:nrow(data),function(k){
+    library(parallel)
+    library(doSNOW)
+    library(foreach)
+    ncl = detectCores(logical = FALSE)
+    cl = makeCluster(ncl)
+    registerDoSNOW(cl)
+    os.lik = foreach (k=1:nrow(data),.packages=c("copula","IRtests"),.combine = c) %dopar% {
       os.mle = optim(theta.ini, nlik, copula.fam = copula.fam, obs = data[-k,,drop=F], method = "Brent", lower = low[copula.fam], upper = up[copula.fam])$par
       nlik1(theta = os.mle, obs = data[k,], copula.fam = copula.fam)
-    })
-    test.stat.exact  = sum(os.lik[os.lik!=0]) - is.lik
+    }
+    stopCluster(cl)
+    test.stat.exact  = sum(os.lik,na.rm=T) - is.lik
   } else {
     test.stat.exact = NA
   }
@@ -172,31 +192,5 @@ update.data = function(data){
   S.x2 = summary(surv.t2,sort(x2))$surv[rank(x2)]
 
   return(list(data=cbind(data,S.x1,S.x2),surv.t1=surv.t1,surv.t2=surv.t2))
-}
-
-generate.data = function(nsamp, copula.fam, copula.para, yes.cen=T, cen.rate="low"){
-  sigma=0.5; beta1 = 1.5 ; beta2= 1.5
-
-  switch(copula.fam,
-         "clayton"={tau=copula.para; cc=copula::claytonCopula(copula::copClayton@iTau(tau))},
-         "frank"={tau=copula.para; cc=copula::frankCopula(copula::copFrank@iTau(tau))},
-         "gumbel"={tau=copula.para; cc=copula::gumbelCopula(copula::copGumbel@iTau(tau))},
-         "normal"={cc=copula::normalCopula(copula.para)}
-  )
-  uu=copula::rCopula(nsamp, cc)
-
-  T1 = exp(sigma*qnorm(uu[,1],lower=F)+beta1)
-  T2 = exp(sigma*qnorm(uu[,2],lower=F)+beta2)
-  if (yes.cen==F){
-    x1 = T1; x2 = T2;
-    d1 = d2 = rep(1,length(T1))
-  } else {
-    if (cen.rate=="high") {
-      C = exp(rnorm(nsamp,log(4),0.2))
-    }  else C= exp(rnorm(nsamp,log(7),0.1))
-    x1 = pmin(T1,C); x2 = pmin(T2,C);
-    d1 = ifelse(T1<=C, 1, 0); d2 = ifelse(T2<=C, 1, 0)
-  }
-  data.frame(x1, x2, d1, d2)
 }
 
