@@ -91,8 +91,8 @@ nlik = function(theta, u1,u2,d1,d2, copula.fam){
 #'
 #' @param u1 a vector, the first pseudo-observations
 #' @param u2 a vector, the second pseudo-observations
-#' @param d1 a vector of indicators whether each observation in the first response is fully observed: \code {1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
-#' @param d2 a vector of indicators whether each observation in the second response is fully observed: \code {1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
+#' @param d1 a vector of indicators whether each observation in the first response is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
+#' @param d2 a vector of indicators whether each observation in the second response is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
 #' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "gumbel", and "normal"
 #' @param yes.exact a logical value indicating whether to calculate the exact test statistic; if \code{yes.exact=FALSE} (default value), the approximate test statistic is calculated.
 
@@ -141,8 +141,8 @@ PIOS.fun = function(u1,u2,d1,d2,copula.fam,yes.exact=F){
   # in-sample pseudo log-likelihood
   is.lik = pseudoMLE.out$value
   if (yes.exact){
-    os.lik = foreach (k=1:length(u1),.packages=c("copula"),.combine = c) %dopar% {
-      source("R/helpers.R")
+    os.lik = foreach (k=1:length(u1),.packages=c("copula","IRtests"),.combine = c) %dopar% {
+      # source("R/helpers.R")
       os.mle = optim(theta.ini, nlik, copula.fam = copula.fam,u1=u1[-k],u2=u2[-k],d1=d1[-k],d2=d2[-k], method = "Brent", lower = low[copula.fam], upper = up[copula.fam])$par
       nlik1(theta=os.mle,u1=u1[k],u2=u2[k],d1=d1[k],d2=d2[k], copula.fam = copula.fam)
     }
@@ -150,9 +150,9 @@ PIOS.fun = function(u1,u2,d1,d2,copula.fam,yes.exact=F){
     ii = numDeriv::hessian(nlik,x=theta.est,u1=u1,u2=u2,d1=d1,d2=d2,copula.fam=copula.fam)
     ii_inv = try(solve(ii),silent=T)
     if (!is.character(ii_inv) & !is.na(ii_inv)) {
-      ss = lapply(1:length(u1),function(k){
+      ss = do.call(rbind,lapply(1:length(u1),function(k){
         numDeriv::jacobian(nlik1,x=theta.est,u1=u1[k],u2=u2[k],d1=d1[k],d2=d2[k],copula.fam=copula.fam)}
-      ) %>% do.call(rbind,.)
+      ))
       os.mle = as.vector(theta.est + ii_inv%*%t(ss))
       os.lik = sapply(1:length(os.mle),function(i){
         nlik1(os.mle[i],u1=u1[i],u2=u2[i],d1=d1[i],d2=d2[i],copula.fam=copula.fam)
@@ -172,8 +172,8 @@ PIOS.fun = function(u1,u2,d1,d2,copula.fam,yes.exact=F){
 #'
 #' @param u1 a vector, the first pseudo-observations
 #' @param u2 a vector, the second pseudo-observations
-#' @param d1 a vector of indicators whether each observation in the first response is fully observed: \code {1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
-#' @param d2 a vector of indicators whether each observation in the second response is fully observed: \code {1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
+#' @param d1 a vector of indicators whether each observation in the first response is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
+#' @param d2 a vector of indicators whether each observation in the second response is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
 #' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "gumbel", and "normal"
 
 #' @import copula numDeriv
@@ -223,9 +223,9 @@ IR.fun = function(u1,u2,d1,d2, copula.fam){
   ii_inv = try(solve(ii),silent=T)
 
   if (!is.character(ii_inv) & !is.na(ii_inv)) {
-    ss = lapply(1:length(u1),function(k){
+    ss = do.call(rbind,lapply(1:length(u1),function(k){
       numDeriv::jacobian(nlik1,x=theta.est,u1=u1[k],u2=u2[k],d1=d1[k],d2=d2[k],copula.fam=copula.fam)}
-    ) %>% do.call(rbind,.)
+    ))
     V = t(ss)%*%ss; IR.stat = sum(diag(ii_inv%*%V))
   } else {
     IR.stat = NA

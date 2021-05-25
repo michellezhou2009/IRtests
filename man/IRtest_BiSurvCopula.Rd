@@ -18,9 +18,9 @@ IRtest_BiSurvCopula(
 
 \item{x2}{a vector, the second response}
 
-\item{d1}{a vector of indicators whether each observation in \code{x1} is fully observed: \code {1} indicates the observation is fully observed, and \code{0} indicates the observation is censored}
+\item{d1}{a vector of indicators whether each observation in \code{x1} is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored}
 
-\item{d2}{a vector of indicators whether each observation in \code{x2} is fully observed: \code {1} indicates the observation is fully observed, and \code{0} indicates the observation is censored}
+\item{d2}{a vector of indicators whether each observation in \code{x2} is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored}
 
 \item{copula.fam}{a character indicating which one of the following copula families: "clayton", "frank", "gumbel", and "normal"}
 

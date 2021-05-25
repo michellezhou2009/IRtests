@@ -4,8 +4,8 @@
 #'
 #' @param x1 a vector, the first response
 #' @param x2 a vector, the second response
-#' @param d1 a vector of indicators whether each observation in \code{x1} is fully observed: \code {1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
-#' @param d2 a vector of indicators whether each observation in \code{x2} is fully observed: \code {1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
+#' @param d1 a vector of indicators whether each observation in \code{x1} is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
+#' @param d2 a vector of indicators whether each observation in \code{x2} is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
 #' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "gumbel", and "normal"
 #' @param control a list of the following components: \code{yes.boot}, \code{nboot}, \code{seed1}, and \code{same.cen}. \code{yes.boot} is a logical value indicating whether to implement the bootstrap procedure. \code{nboot} is the number of bootstrap samples.  \code{seed1} is the seed for generating the bootstrap samples. \code{same.cen} is a logical value indicating whether the censoring time is same for both event time.
 #'
@@ -62,11 +62,11 @@ IRtest_BiSurvCopula <- function(x1,x2,d1,d2, copula.fam, control=list(yes.boot=T
     # registerDoSNOW(cl)
 
     boot_out = foreach (b=1:nboot,
-                        .packages=c("survival","copula","numDeriv","dplyr"),
+                        .packages=c("survival","copula","numDeriv","IRtests"),
                         .combine = c) %dopar% {
                           set.seed(seeds_b[b])
                           # generate the bivariate event times (T1,T2)
-                          source("R/helpers.R")
+                          # source("R/helpers.R")
                           switch(copula.fam,
                                  "clayton"={cc_b=claytonCopula(theta_est)},
                                  "frank"={cc_b=frankCopula(theta_est)},

@@ -11,9 +11,9 @@ PIOS.fun(u1, u2, d1, d2, copula.fam, yes.exact = F)
 
 \item{u2}{a vector, the second pseudo-observations}
 
-\item{d1}{a vector of indicators whether each observation in the first response is fully observed: \code {1} indicates the observation is fully observed, and \code{0} indicates the observation is censored}
+\item{d1}{a vector of indicators whether each observation in the first response is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored}
 
-\item{d2}{a vector of indicators whether each observation in the second response is fully observed: \code {1} indicates the observation is fully observed, and \code{0} indicates the observation is censored}
+\item{d2}{a vector of indicators whether each observation in the second response is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored}
 
 \item{copula.fam}{a character indicating which one of the following copula families: "clayton", "frank", "gumbel", and "normal"}
 
