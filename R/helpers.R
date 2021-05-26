@@ -66,11 +66,17 @@ CopulaFuns <- function(copula.family){
   }
 
 # log-likelihood calculation for one observation
-nlik1 = function(theta, u1,u2,d1,d2,copula.fam){
+nlik1 = function(theta,u1,u2,d1,d2,copula.fam){
   cop.fun <- CopulaFuns(copula.fam)
-  #obs = as.numeric(obs)
   code = 2*d1 + d2 + 1
-  out = cop.fun[[code]](u1,u2,theta)
+  code.ls = sort(unique(code))
+  index = unlist(lapply(code.ls,function(c){which(code==c)}))
+  out.ls = unlist(sapply(code.ls,function(c){
+    cop.fun[[c]](u1[code==c],u2[code==c],theta)
+  }))
+  out = code*0
+  out[index] = out.ls
+  #return(-sum(log(out),na.rm=T))
   return(-log(out))
 }
 
@@ -150,9 +156,10 @@ PIOS.fun = function(u1,u2,d1,d2,copula.fam,yes.exact=F){
     ii = numDeriv::hessian(nlik,x=theta.est,u1=u1,u2=u2,d1=d1,d2=d2,copula.fam=copula.fam)
     ii_inv = try(solve(ii),silent=T)
     if (!is.character(ii_inv) & !is.na(ii_inv)) {
-      ss = do.call(rbind,lapply(1:length(u1),function(k){
-        numDeriv::jacobian(nlik1,x=theta.est,u1=u1[k],u2=u2[k],d1=d1[k],d2=d2[k],copula.fam=copula.fam)}
-      ))
+      ss = numDeriv::jacobian(nlik1,x=theta.est,u1=u1,u2=u2,d1=d1,d2=d2,copula.fam=copula.fam)
+      # ss = do.call(rbind,lapply(1:length(u1),function(k){
+      #   numDeriv::jacobian(nlik1,x=theta.est,u1=u1[k],u2=u2[k],d1=d1[k],d2=d2[k],copula.fam=copula.fam)}
+      # ))
       os.mle = as.vector(theta.est + ii_inv%*%t(ss))
       os.lik = sapply(1:length(os.mle),function(i){
         nlik1(os.mle[i],u1=u1[i],u2=u2[i],d1=d1[i],d2=d2[i],copula.fam=copula.fam)
@@ -223,9 +230,10 @@ IR.fun = function(u1,u2,d1,d2, copula.fam){
   ii_inv = try(solve(ii),silent=T)
 
   if (!is.character(ii_inv) & !is.na(ii_inv)) {
-    ss = do.call(rbind,lapply(1:length(u1),function(k){
-      numDeriv::jacobian(nlik1,x=theta.est,u1=u1[k],u2=u2[k],d1=d1[k],d2=d2[k],copula.fam=copula.fam)}
-    ))
+    ss = numDeriv::jacobian(nlik1,x=theta.est,u1=u1,u2=u2,d1=d1,d2=d2,copula.fam=copula.fam)
+    # ss = do.call(rbind,lapply(1:length(u1),function(k){
+    #   numDeriv::jacobian(nlik1,x=theta.est,u1=u1[k],u2=u2[k],d1=d1[k],d2=d2[k],copula.fam=copula.fam)}
+    # ))
     V = t(ss)%*%ss; IR.stat = sum(diag(ii_inv%*%V))
   } else {
     IR.stat = NA
