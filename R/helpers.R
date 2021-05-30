@@ -35,7 +35,7 @@ CopulaFuns <- function(copula.family){
            dc.u2 = function(u1,u2,theta){}; body(dc.u2) = D(clayton, "u2")
            dc.u1u2 = function(u1,u2,theta){}; body(dc.u1u2) = D(D(clayton, "u1"), "u2")
            C.fun = function(u1,u2,theta){}; body(C.fun) = clayton
-           list(C=C.fun, c.u2=dc.u2, c.u1=dc.u2,c.u1u2=dc.u1u2)
+           list(C=C.fun, c.u2=dc.u2, c.u1=dc.u1,c.u1u2=dc.u1u2)
          },
          "frank"= {
            frank = expression((-1/theta)*log(1 + (exp(-theta*u1) - 1)*(exp(-theta*u2) - 1)/(exp(-theta) - 1)))
@@ -43,7 +43,7 @@ CopulaFuns <- function(copula.family){
            df.u2 = function(u1,u2,theta){}; body(df.u2) = D(frank, "u2")
            df.u1u2 = function(u1,u2,theta){}; body(df.u1u2) = D(D(frank, "u1"), "u2")
            C.fun = function(u1,u2,theta){}; body(C.fun) = frank
-           list(C=C.fun, c.u2=df.u2, c.u1=df.u2,c.u1u2=df.u1u2)
+           list(C=C.fun, c.u2=df.u2, c.u1=df.u1,c.u1u2=df.u1u2)
          },
          "normal"={
            dn.u1 = function(u1,u2,theta){
@@ -59,7 +59,7 @@ CopulaFuns <- function(copula.family){
              sigma = matrix(c(1,theta,theta,1),nrow=2,ncol=2)
              apply(cbind(u1,u2),1,function(s) mvtnorm::pmvnorm(upper=qnorm(s),lower=-Inf,sigma=sigma))
            }
-           list(C=C.fun, c.u2=dn.u2, c.u1=dn.u2,c.u1u2=dn.u1u2)
+           list(C=C.fun, c.u2=dn.u2, c.u1=dn.u1,c.u1u2=dn.u1u2)
          }
          )
 
