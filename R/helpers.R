@@ -141,7 +141,7 @@ PIOS.fun = function(u1,u2,d1,d2,copula.fam,yes.exact=F){
   low = c(1,rep(0,3)); up = c(rep(40,3),1);
   names(low) = names(up) = c("gumbel","clayton","frank","normal")
 
-  pseudoMLE.out = optim(theta.ini, nlik, u1=u1,u2=u2,d1=d1,d2=d2, copula.fam = copula.fam, method = "Brent", lower = low[copula.fam], upper = up[copula.fam])
+  pseudoMLE.out = optim(theta.ini, nlik, u1=u1,u2=u2,d1=d1,d2=d2, copula.fam = copula.fam, method = "Brent", lower = low[copula.fam], upper = up[copula.fam],hessian=T)
   theta.est = pseudoMLE.out$par
 
   # in-sample pseudo log-likelihood
