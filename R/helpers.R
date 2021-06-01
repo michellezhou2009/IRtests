@@ -57,8 +57,6 @@ CopulaFuns <- function(copula.family){
            }
            C.fun = function(u1,u2,theta){
              pbivnorm::pbivnorm(x=qnorm(cbind(u1,u2)),rho=theta)
-             # sigma = matrix(c(1,theta,theta,1),nrow=2,ncol=2)
-             # apply(cbind(u1,u2),1,function(s) mvtnorm::pmvnorm(upper=qnorm(s),lower=-Inf,sigma=sigma))
            }
            list(C=C.fun, c.u2=dn.u2, c.u1=dn.u1,c.u1u2=dn.u1u2)
          }
@@ -145,17 +143,17 @@ PIOS.fun = function(u1,u2,d1,d2,copula.fam,yes.exact=F){
 
   pseudoMLE.out = optim(theta.ini, nlik, u1=u1,u2=u2,d1=d1,d2=d2, copula.fam = copula.fam, method = "Brent", lower = low[copula.fam], upper = up[copula.fam])
   theta.est = pseudoMLE.out$par
+
   # in-sample pseudo log-likelihood
   is.lik = pseudoMLE.out$value
   if (yes.exact){
     os.lik = foreach (k=1:length(u1),.packages=c("copula","IRtests"),.combine = c) %dopar% {
-      # source("R/helpers.R")
       os.mle = optim(theta.ini, nlik, copula.fam = copula.fam,u1=u1[-k],u2=u2[-k],d1=d1[-k],d2=d2[-k], method = "Brent", lower = low[copula.fam], upper = up[copula.fam])$par
       nlik1(theta=os.mle,u1=u1[k],u2=u2[k],d1=d1[k],d2=d2[k], copula.fam = copula.fam)
     }
   } else {
-    ii = numDeriv::hessian(nlik,x=theta.est,u1=u1,u2=u2,d1=d1,d2=d2,copula.fam=copula.fam)
-    ii_inv = try(solve(ii),silent=T)
+    ii = pseudoMLE.out$hessian
+    if (!is.na(ii)) ii_inv = try(solve(ii),silent=T) else ii_inv=NA
     if (!is.character(ii_inv) & !is.na(ii_inv)) {
       ss = numDeriv::jacobian(nlik1,x=theta.est,u1=u1,u2=u2,d1=d1,d2=d2,copula.fam=copula.fam)
       # ss = do.call(rbind,lapply(1:length(u1),function(k){
@@ -163,7 +161,10 @@ PIOS.fun = function(u1,u2,d1,d2,copula.fam,yes.exact=F){
       # ))
       os.mle = as.vector(theta.est + ii_inv%*%t(ss))
       os.lik = sapply(1:length(os.mle),function(i){
-        nlik1(os.mle[i],u1=u1[i],u2=u2[i],d1=d1[i],d2=d2[i],copula.fam=copula.fam)
+        if (!is.na(os.mle[i])) {
+          nlik1(os.mle[i],u1=u1[i],u2=u2[i],d1=d1[i],d2=d2[i],copula.fam=copula.fam)
+        } else return(NA)
+
       })
     } else {
     os.lik=NULL
@@ -224,14 +225,16 @@ IR.fun = function(u1,u2,d1,d2, copula.fam){
   low = c(1,rep(0,3)); up = c(rep(40,3),1);
   names(low) = names(up) = c("gumbel","clayton","frank","normal")
 
-  pseudoMLE.out = optim(theta.ini, nlik, u1=u1,u2=u2,d1=d1,d2=d2, copula.fam = copula.fam, method = "Brent", lower = low[copula.fam], upper = up[copula.fam])
+  pseudoMLE.out = optim(theta.ini, nlik, u1=u1,u2=u2,d1=d1,d2=d2, copula.fam = copula.fam, method = "Brent", lower = low[copula.fam], upper = up[copula.fam], hessian=T)
   theta.est = pseudoMLE.out$par
-
-  ii = numDeriv::hessian(nlik,x=theta.est,u1=u1,u2=u2,d1=d1,d2=d2,copula.fam=copula.fam)
-  ii_inv = try(solve(ii),silent=T)
+  ii = pseudoMLE.out$hessian
+  if (!is.na(ii)) ii_inv = try(solve(ii),silent=T) else ii_inv=NA
+  # ii = try(numDeriv::hessian(nlik,x=theta.est,u1=u1,u2=u2,d1=d1,d2=d2,copula.fam=copula.fam))
+  # ii_inv = try(solve(ii),silent=T)
 
   if (!is.character(ii_inv) & !is.na(ii_inv)) {
     ss = numDeriv::jacobian(nlik1,x=theta.est,u1=u1,u2=u2,d1=d1,d2=d2,copula.fam=copula.fam)
+    ss = ss[complete.cases(ss),,drop=F]
     # ss = do.call(rbind,lapply(1:length(u1),function(k){
     #   numDeriv::jacobian(nlik1,x=theta.est,u1=u1[k],u2=u2[k],d1=d1[k],d2=d2[k],copula.fam=copula.fam)}
     # ))

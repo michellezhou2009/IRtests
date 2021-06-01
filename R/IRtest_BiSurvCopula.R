@@ -57,16 +57,11 @@ IRtest_BiSurvCopula <- function(x1,x2,d1,d2, copula.fam, control=list(yes.boot=T
     set.seed(seed1)
     seeds_b = round(runif(nboot,10,100000))
 
-    # ncl = detectCores(logical = FALSE)
-    # cl = makeCluster(ncl)
-    # registerDoSNOW(cl)
-
     boot_out = foreach (b=1:nboot,
                         .packages=c("survival","copula","numDeriv","IRtests"),
                         .combine = c) %dopar% {
                           set.seed(seeds_b[b])
                           # generate the bivariate event times (T1,T2)
-                          # source("R/helpers.R")
                           switch(copula.fam,
                                  "clayton"={cc_b=claytonCopula(theta_est)},
                                  "frank"={cc_b=frankCopula(theta_est)},
@@ -85,12 +80,11 @@ IRtest_BiSurvCopula <- function(x1,x2,d1,d2, copula.fam, control=list(yes.boot=T
                           x1_b = pmin(t1_b,c1_b); x2_b = pmin(t2_b,c2_b)
                           d1_b = ifelse(t1_b<=c1_b,1,0); d2_b=ifelse(t2_b<=c2_b,1,0)
                           update.b = update.data(x1_b,x2_b,d1_b,d2_b)
-                          out_sp = IR.fun(update.b$u1,update.b$u2,d1_b,d2_b,copula.fam)
+                          out_sp = IR.fun(u1=update.b$u1,u2=update.b$u2,d1=d1_b,d2=d2_b,copula.fam)
                           out_sp$IR
                         }
-    # stopCluster(cl)
-    boot.u = boot_out - mean(boot_out)
-    pval = c("onesided" = mean(boot.u>(IR-1)), "twosided" = mean(boot.u>abs(IR-1))*2)
+    boot.u = boot_out - mean(boot_out,na.rm=T)
+    pval = c("onesided" = mean(boot.u>(IR-1),na.rm=T), "twosided" = mean(boot.u>abs(IR-1),na.rm=T)*2)
   } else {boot_out = NA;pval=NA}
   return(list("theta_est"=theta_est,"IR"=IR,"IR.boot"=boot_out,"pval"=pval))
 }
