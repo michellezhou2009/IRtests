@@ -6,10 +6,10 @@
 #' @param x2 a vector, the second response
 #' @param d1 a vector of indicators whether each observation in \code{x1} is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
 #' @param d2 a vector of indicators whether each observation in \code{x2} is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
-#' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "gumbel", and "normal"
+#' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "joe","gumbel", and "normal"
 #' @param control a list of the following components: \code{yes.exact}, \code{yes.boot}, \code{nboot}, \code{seed1}, and \code{same.cen}. \code{yes.exact} is a logical value indicating whether to calculate the exact test statistic; if \code{yes.exact=FALSE} (default value), the approximate test statistic is calculated. \code{yes.boot} is a logical value indicating whether to implement the bootstrap procedure. \code{nboot} is the number of bootstrap samples.  \code{seed1} is the seed for generating the bootstrap samples. \code{same.cen} is a logical value indicating whether the censoring time is same for both event time.
 #'
-#' @import pbivnorm copula survival numDeriv foreach parallel doSNOW
+#' @import copula survival numDeriv foreach parallel doSNOW
 #'
 #' @export
 #'
@@ -30,8 +30,8 @@ PIOStest_BiSurvCopula <- function(x1,x2,d1,d2, copula.fam, control=list(yes.exac
   if (any(is.na(x2))) stop("Missing values in \"x2\".")
   if (length(setdiff(unique(d1),c(0,1)))>0) stop("Values in \"d1\" can only be 0 or 1.")
   if (length(setdiff(unique(d2),c(0,1)))>0) stop("Values in \"d2\" can only be 0 or 1.")
-  if(!(copula.fam%in% c("gumbel","clayton","frank","normal"))){
-    stop("'copula.fam' should be one of 'gumbel','clayton','frank','normal'")
+  if(!(copula.fam%in% c("joe","gumbel","clayton","frank","normal"))){
+    stop("'copula.fam' should be one of `joe`, 'gumbel','clayton','frank','normal'")
   }
 
   yes.exact = control$yes.exact
@@ -63,6 +63,7 @@ PIOStest_BiSurvCopula <- function(x1,x2,d1,d2, copula.fam, control=list(yes.exac
         set.seed(seeds_b[b])
         # generate the bivariate event times (T1,T2)
         switch(copula.fam,
+               "joe"={cc_b=joeCopula(theta_est)},
                "clayton"={cc_b=claytonCopula(theta_est)},
                "frank"={cc_b=frankCopula(theta_est)},
                "gumbel"={cc_b=gumbelCopula(theta_est)},

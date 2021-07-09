@@ -21,6 +21,14 @@ inv_cdf <- function(uu,distfun){
 # Bivariate copula functions with derivative
 CopulaFuns <- function(copula.family){
   switch(copula.family,
+         "joe" = {
+           joe = expression(1-((1-u1)^theta+(1-u2)^theta-((1-u1)^theta)*((1-u2)^theta))^(1/theta))
+           dj.u1 = function(u1,u2,theta){}; body(dj.u1) = D(joe, "u1") # first-order derivative of joe with respect to u1
+           dj.u2 = function(u1,u2,theta){}; body(dj.u2) = D(joe, "u2") # first-order derivative of joe with respect to u2
+           dj.u1u2 = function(u1,u2,theta){}; body(dj.u1u2) = D(D(joe, "u1"), "u2") # 2nd-order derivative of joe with respect to u1 and u2
+           C.fun = function(u1,u2,theta){}; body(C.fun) = joe
+           list(C=C.fun, c.u2=dj.u2, c.u1=dj.u1,c.u1u2=dj.u1u2)
+         },
          "gumbel" = {
            gumbel = expression(exp(-((-log(u1))^(theta) + (-log(u2))^(theta))^(1/theta)))
            dg.u1 = function(u1,u2,theta){}; body(dg.u1) = D(gumbel, "u1") # first-order derivative of gumbel with respect to u1
@@ -56,7 +64,9 @@ CopulaFuns <- function(copula.family){
              dnorm(qnorm(u1),mean=theta*qnorm(u2),sd=sqrt(1-theta^2))*dnorm(qnorm(u2))
            }
            C.fun = function(u1,u2,theta){
-             pbivnorm::pbivnorm(x=qnorm(cbind(u1,u2)),rho=theta)
+             #pbivnorm::pbivnorm(x=qnorm(cbind(u1,u2)),rho=theta)
+             cc = copula::normalCopula(theta)
+             copula::pCopula(cbind(u1,u2),cc)
            }
            list(C=C.fun, c.u2=dn.u2, c.u1=dn.u1,c.u1u2=dn.u1u2)
          }
@@ -101,7 +111,7 @@ nlik = function(theta, u1,u2,d1,d2, copula.fam){
 #' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "gumbel", and "normal"
 #' @param yes.exact a logical value indicating whether to calculate the exact test statistic; if \code{yes.exact=FALSE} (default value), the approximate test statistic is calculated.
 
-#' @import pbivnorm copula numDeriv foreach parallel doSNOW
+#' @import copula numDeriv foreach parallel doSNOW
 #'
 #' @export
 #'
@@ -117,12 +127,14 @@ PIOS.fun = function(u1,u2,d1,d2,copula.fam,yes.exact=F){
   if (any(is.na(u2))) stop("Missing values in \"u2\".")
   if (length(setdiff(unique(d1),c(0,1)))>0) stop("Values in \"d1\" can only be 0 or 1.")
   if (length(setdiff(unique(d2),c(0,1)))>0) stop("Values in \"d2\" can only be 0 or 1.")
-  if(!(copula.fam%in% c("gumbel","clayton","frank","normal"))){
-    stop("'copula.fam' should be one of 'gumbel','clayton','frank','normal'")
+  if(!(copula.fam%in% c("joe","gumbel","clayton","frank","normal"))){
+    stop("'copula.fam' should be one of 'joe','gumbel','clayton','frank','normal'")
   }
 
   # obtain the initial value of theta using the relationship between copula parameter and kendall's tau
   switch(copula.fam,
+         "joe" = {
+           theta.ini = copJoe@iTau(cor(u1, u2, method = "kendall"))},
          "clayton"={
            theta.ini = copClayton@iTau(cor(u1, u2, method = "kendall"))
          },
@@ -138,8 +150,8 @@ PIOS.fun = function(u1,u2,d1,d2,copula.fam,yes.exact=F){
   )
 
   # define boundary value of optimization
-  low = c(1,rep(0,3)); up = c(rep(40,3),1);
-  names(low) = names(up) = c("gumbel","clayton","frank","normal")
+  low = c(1,1,rep(0,3)); up = c(rep(40,4),1);
+  names(low) = names(up) = c("joe","gumbel","clayton","frank","normal")
 
   pseudoMLE.out = optim(theta.ini, nlik, u1=u1,u2=u2,d1=d1,d2=d2, copula.fam = copula.fam, method = "Brent", lower = low[copula.fam], upper = up[copula.fam],hessian=T)
   theta.est = pseudoMLE.out$par
@@ -183,9 +195,9 @@ PIOS.fun = function(u1,u2,d1,d2,copula.fam,yes.exact=F){
 #' @param u2 a vector, the second pseudo-observations
 #' @param d1 a vector of indicators whether each observation in the first response is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
 #' @param d2 a vector of indicators whether each observation in the second response is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
-#' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "gumbel", and "normal"
+#' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "joe", "gumbel", and "normal"
 
-#' @import pbivnorm copula numDeriv
+#' @import copula numDeriv
 #'
 #' @export
 #'
@@ -201,12 +213,14 @@ IR.fun = function(u1,u2,d1,d2, copula.fam){
   if (any(is.na(u2))) stop("Missing values in \"u2\".")
   if (length(setdiff(unique(d1),c(0,1)))>0) stop("Values in \"d1\" can only be 0 or 1.")
   if (length(setdiff(unique(d2),c(0,1)))>0) stop("Values in \"d2\" can only be 0 or 1.")
-  if(!(copula.fam%in% c("gumbel","clayton","frank","normal"))){
-    stop("'copula.fam' should be one of 'gumbel','clayton','frank','normal'")
+  if(!(copula.fam%in% c("joe","gumbel","clayton","frank","normal"))){
+    stop("'copula.fam' should be one of 'joe','gumbel','clayton','frank','normal'")
   }
 
   # obtain the initial value of theta using the relationship between copula parameter and kendall's tau
   switch(copula.fam,
+         "joe" = {
+           theta.ini = copJoe@iTau(cor(u1, u2, method = "kendall"))},
          "clayton"={
            theta.ini = copClayton@iTau(cor(u1, u2, method = "kendall"))
          },
@@ -222,8 +236,8 @@ IR.fun = function(u1,u2,d1,d2, copula.fam){
   )
 
   # define boundary value of optimization
-  low = c(1,rep(0,3)); up = c(rep(40,3),1);
-  names(low) = names(up) = c("gumbel","clayton","frank","normal")
+  low = c(1,1,rep(0,3)); up = c(rep(40,4),1);
+  names(low) = names(up) = c("joe","gumbel","clayton","frank","normal")
 
   pseudoMLE.out = optim(theta.ini, nlik, u1=u1,u2=u2,d1=d1,d2=d2, copula.fam = copula.fam, method = "Brent", lower = low[copula.fam], upper = up[copula.fam], hessian=T)
   theta.est = pseudoMLE.out$par

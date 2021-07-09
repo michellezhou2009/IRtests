@@ -15,7 +15,7 @@ IR.fun(u1, u2, d1, d2, copula.fam)
 
 \item{d2}{a vector of indicators whether each observation in the second response is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored}
 
-\item{copula.fam}{a character indicating which one of the following copula families: "clayton", "frank", "gumbel", and "normal"}
+\item{copula.fam}{a character indicating which one of the following copula families: "clayton", "frank", "joe", "gumbel", and "normal"}
 }
 \value{
 a list of the following components: \code{theta.est}, the PMLE of the copula parameter, and \code{IR}, IR test statistic.
