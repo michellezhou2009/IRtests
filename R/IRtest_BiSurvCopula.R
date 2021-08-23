@@ -9,7 +9,7 @@
 #' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "joe", "gumbel", and "normal"
 #' @param control a list of the following components: \code{yes.boot}, \code{nboot}, \code{seed1}, and \code{same.cen}. \code{yes.boot} is a logical value indicating whether to implement the bootstrap procedure. \code{nboot} is the number of bootstrap samples.  \code{seed1} is the seed for generating the bootstrap samples. \code{same.cen} is a logical value indicating whether the censoring time is same for both event time.
 #'
-#' @import copula survival numDeriv foreach parallel doSNOW
+#' @import pbivnorm copula survival numDeriv foreach parallel doSNOW
 #'
 #' @export
 #'
@@ -56,7 +56,6 @@ IRtest_BiSurvCopula <- function(x1,x2,d1,d2, copula.fam, control=list(yes.boot=T
     }
     set.seed(seed1)
     seeds_b = round(runif(nboot,10,100000))
-
     boot_out = foreach (b=1:nboot,
                         .packages=c("survival","copula","numDeriv","IRtests"),
                         .combine = c) %dopar% {

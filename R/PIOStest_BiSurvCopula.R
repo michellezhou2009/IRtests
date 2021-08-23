@@ -9,7 +9,7 @@
 #' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "joe","gumbel", and "normal"
 #' @param control a list of the following components: \code{yes.exact}, \code{yes.boot}, \code{nboot}, \code{seed1}, and \code{same.cen}. \code{yes.exact} is a logical value indicating whether to calculate the exact test statistic; if \code{yes.exact=FALSE} (default value), the approximate test statistic is calculated. \code{yes.boot} is a logical value indicating whether to implement the bootstrap procedure. \code{nboot} is the number of bootstrap samples.  \code{seed1} is the seed for generating the bootstrap samples. \code{same.cen} is a logical value indicating whether the censoring time is same for both event time.
 #'
-#' @import copula survival numDeriv foreach parallel doSNOW
+#' @import pbivnorm copula survival numDeriv foreach parallel doSNOW
 #'
 #' @export
 #'

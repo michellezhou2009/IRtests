@@ -64,9 +64,9 @@ CopulaFuns <- function(copula.family){
              dnorm(qnorm(u1),mean=theta*qnorm(u2),sd=sqrt(1-theta^2))*dnorm(qnorm(u2))
            }
            C.fun = function(u1,u2,theta){
-             #pbivnorm::pbivnorm(x=qnorm(cbind(u1,u2)),rho=theta)
-             cc = copula::normalCopula(theta)
-             copula::pCopula(cbind(u1,u2),cc)
+             pbivnorm::pbivnorm(x=qnorm(cbind(u1,u2)),rho=theta)
+             #cc = copula::normalCopula(theta)
+             #copula::pCopula(cbind(u1,u2),cc)
            }
            list(C=C.fun, c.u2=dn.u2, c.u1=dn.u1,c.u1u2=dn.u1u2)
          }
@@ -111,7 +111,7 @@ nlik = function(theta, u1,u2,d1,d2, copula.fam){
 #' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "gumbel", and "normal"
 #' @param yes.exact a logical value indicating whether to calculate the exact test statistic; if \code{yes.exact=FALSE} (default value), the approximate test statistic is calculated.
 
-#' @import copula numDeriv foreach parallel doSNOW
+#' @import pbivnorm copula numDeriv foreach parallel doSNOW
 #'
 #' @export
 #'
@@ -197,7 +197,7 @@ PIOS.fun = function(u1,u2,d1,d2,copula.fam,yes.exact=F){
 #' @param d2 a vector of indicators whether each observation in the second response is fully observed: \code{1} indicates the observation is fully observed, and \code{0} indicates the observation is censored
 #' @param copula.fam a character indicating which one of the following copula families: "clayton", "frank", "joe", "gumbel", and "normal"
 
-#' @import copula numDeriv
+#' @import pbivnorm copula numDeriv
 #'
 #' @export
 #'
