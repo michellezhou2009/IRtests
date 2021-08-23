@@ -1,6 +1,6 @@
 # IRtests
 
-This R package is to implement the proposed information ratio (IR) test and in-and-out-of-sample pseudo (PIOS) likelihood ratio test in the manuscript titled [""]().
+This R package is to implement the proposed information ratio (IR) test and in-and-out-of-sample pseudo (PIOS) likelihood ratio test in the manuscript titled "Information matrix equivalence in the presence of censoring: A goodness-of-fit test for semiparametric copula models with multivariate survival data".
 
 ## Instrall `IRtests`
 
