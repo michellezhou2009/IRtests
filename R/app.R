@@ -1,15 +1,15 @@
 #' @title Example `app` data
 #'
-#' @description Bivariate survival data: twin age-at-appendicectomy from questionnaire survey of adult members of the Australian NHMRC Twin Registry.
+#' @description Bivariate survival data: twin age-at-appendicectomy from questionnaire survey of adult members of the Australian NHMRC Twin Registry. The data is obtained from https://genepi.qimr.edu.au/staff/davidD/Appendix/.
 #'
 #' @format a data frame include the following variable
 #' \describe{
 #' \item{fam}{family ID}
 #' \item{id}{Subject ID}
-#' \item{zyg}{twin zygosity: `1` = Monozygotic Female-Female pair, `2` = Monozygotic Male-Male pair, `3` = Dizygotic Female-Female pair, `4` = Dizygotic Male-Male pair, `5` = Dizygotic Male-Female pair, and `6` = Dizygotic Female-Male pair}
-#' \item{sex}{`1` = male, `2` = female}
+#' \item{zyg}{twin zygosity: 1 = Monozygotic Female-Female pair, 2 = Monozygotic Male-Male pair, 3 = Dizygotic Female-Female pair, 4 = Dizygotic Male-Male pair, 5 = Dizygotic Male-Female pair, and 6 = Dizygotic Female-Male pair}
+#' \item{sex}{1 = male, 2 = female}
 #' \item{agein80}{age in years at 1980   }
 #' \item{onset}{age at appendicectomy or censoring age}
-#' \item{app}{`1` = Underwent appendicectomy, `0`=censored.}
+#' \item{app}{1 = Underwent appendicectomy, 0=censored.}
 #' }
 "app"
