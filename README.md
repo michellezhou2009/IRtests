@@ -17,8 +17,12 @@ library(IRtests)
 
 ## Example
 
+<<<<<<< HEAD
 An example data `twins` is included in the package. This data is from the Australian NHMRC Twin Registry and available at https://genepi.qimr.edu.au/staff/davidD/Appendix/. The following gives the R code to test the goodness-of-fit of the Clayton copula for 567 monozygotic same-sex male twin pairs.
 
+=======
+An example data `app` is included in the package. This data is from the Australian NHMRC Twin Registry and available at https://genepi.qimr.edu.au/staff/davidD/Appendix/. The following gives the R code to test the goodness-of-fit of the Clayton copula for 567 monozygotic same-sex male twin pairs.
+>>>>>>> 4d7a08bb4b9c8d3e096f2ba6286c07cfa1588bac
 ```{r}
 load(app)
 workdat = app[app$zyg==1,]
