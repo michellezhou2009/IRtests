@@ -10,8 +10,8 @@ PIOStest_BiSurvCopula(
   d1,
   d2,
   copula.fam,
-  control = list(yes.exact = FALSE, yes.boot = TRUE, nboot = 500, seed1 = 1234,
-    same.cen = FALSE)
+  control = list(yes.exact = FALSE, yes.boot = TRUE, nboot = 500, seed1 = 1234, same.cen
+    = TRUE)
 )
 }
 \arguments{
@@ -31,5 +31,5 @@ PIOStest_BiSurvCopula(
 a list of the following components: \code{theta.est}, the PMLE of the copula parameter,  \code{PIOS}, PIOS test statistic, \code{PIOS.boot}, the bootstrapped resamples of the PIOS test statistics if \code{yes.boot=TRUE}, and \code{pval}, the one-sided and two-sided p-values if \code{yes.boot=TRUE}.
 }
 \description{
-
+PIOS test for misspecification of copula functions in semi-parametric survival copula model for bivariate right-censored data
 }

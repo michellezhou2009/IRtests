@@ -30,5 +30,5 @@ IRtest_BiSurvCopula(
 a list of the following components: \code{theta.est}, the PMLE of the copula parameter,  \code{IR}, IR test statistic, \code{IR.boot}, the bootstrapped resamples of the IR test statistics if \code{yes.boot=TRUE}, and \code{pval}, the one-sided and two-sided p-values if \code{yes.boot=TRUE}.
 }
 \description{
-
+IR test for misspecification of copula functions in semi-parametric survival copula model for bivariate right-censored data
 }

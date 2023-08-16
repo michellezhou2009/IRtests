@@ -20,17 +20,26 @@ library(IRtests)
 An example data `app` is included in the package. This data is from the Australian NHMRC Twin Registry and available at https://genepi.qimr.edu.au/staff/davidD/Appendix/. The following gives the R code to test the goodness-of-fit of the Clayton copula for 1231 monozygotic same-sex female twin pairs.
 
 ```{r}
-load(app)
-workdat = app[app$zyg==1,]
+data(app)
+workdat = app[app$zyg == 3,]
 x1 = workdat$onset[workdat$id==1]
 x2 = workdat$onset[workdat$id==2]
 d1 =  workdat$app[workdat$id==1]
 d2 =  workdat$app[workdat$id==2]
-ncl = detectCores(logical = FALSE)
-cl = makeCluster(ncl)
+cl = makeCluster(4)
 registerDoSNOW(cl)
-out = IRtest_BiSurvCopula(x1=x1,x2=x2, d1=d1,d2=d2,copula.fam = "clayton",
-                    control=list(yes.boot=TRUE,nboot=1000,same.cen=TRUE,seed1=20210823))
+copula.fam.all = c("clayton", "frank", "gumbel", "gaussian")
+res.all = lapply(copula.fam.all, function(copula.fam){
+  out = IRtest_BiSurvCopula(x1 = x1, x2 = x2, d1 = d1, d2 = d2, 
+                            copula.fam = copula.fam,
+                            control=list(yes.boot = TRUE, nboot = 1000, 
+                                         same.cen = TRUE, 
+                                         seed1 = 20210823))
+  data.frame(
+    family = copula.fam, theta = out$theta_est, IR = out$IR, pval = out$pval
+  )
+}) 
+do.call(rbind, res.all)
 stopCluster(cl)
 ```
 
